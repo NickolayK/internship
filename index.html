@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<script src="script.js"></script>
+
+<body>
+    <h4 style="text-align: center;"> To do list</h4>
+    <div style="display: flex;justify-content: space-evenly;">
+
+        <button onclick="sortByText()">sort by text </button>
+        <input type="text" id="myInput" onkeyup="find(event)" placeholder="Search by names or by date">
+        <button onclick="sortByDate()">sort by Date </button>
+
+    </div>
+
+    <table id="listContainer"> </table>
+
+    <form>
+        <fieldset>
+            <legend>Create to do:</legend>
+            <div>
+                <textarea type="text" name="text" rows="3" cols="10" style="width:100%"
+                    placeholder=" enter description"></textarea>
+            </div>
+            <br>
+            <div>
+                <input type="date" name="date" style="width:100%">
+            </div>
+
+            <br>
+            <button type="button" onclick="validate(this.form)"> Добавить</button>
+        </fieldset>
+
+
+    </form>
+
+
+</body>
+
+</html>
