@@ -11,35 +11,21 @@
 <script src="script.js"></script>
 
 <body>
-    <h4 style="text-align: center;"> To do list</h4>
-    <div style="display: flex;justify-content: space-evenly;">
+    <h4 style="text-align: center;"> Find Apartment</h4>
+    <div style="display: flex;    justify-content: center;">
 
-        <button onclick="sortByText()">sort by text </button>
-        <input type="text" id="myInput" onkeyup="find(event)" placeholder="Search by names or by date">
-        <button onclick="sortByDate()">sort by Date </button>
+        <input type="text" id="myInput" value="london"  onkeypress="find( event , this.value)" placeholder="Search by city">
+        <button onclick="searchBtn()"> Find</button>
+
+        <button onclick="openBookMark()"> Bookmarks</button>
 
     </div>
 
-    <table id="listContainer"> </table>
+    <div id="listContainer" > </div>
 
-    <form>
-        <fieldset>
-            <legend>Create to do:</legend>
-            <div>
-                <textarea type="text" name="text" rows="3" cols="10" style="width:100%"
-                    placeholder=" enter description"></textarea>
-            </div>
-            <br>
-            <div>
-                <input type="date" name="date" style="width:100%">
-            </div>
-
-            <br>
-            <button type="button" onclick="validate(this.form)"> Добавить</button>
-        </fieldset>
+    <button onclick="onShowMore()"> Show More </button>
 
 
-    </form>
 
 
 </body>

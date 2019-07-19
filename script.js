@@ -1,193 +1,237 @@
 
-       document.addEventListener("DOMContentLoaded", init);
+    let apartmens = [], 
+        bookMarks = [],
+        CallbackRegistry = {},
+        currentPage = 1,
+        currentSearch ;
 
-       function CreateToDoItem( text  , date  , done = false){
-           this.text = text;
+      
+function scriptRequest(url, onSuccess, onError) {
 
-           this.date = date
+    let scriptOk = false; 
+  
+    const callbackName = 'cb' + String(Math.random()).slice(-6);
 
-           Object.defineProperty(this, "done", {
-               value: done,
-               writable: true, 
-               configurable: true ,
-               enumerable : false
-           });
-       }
+    url += '&callback=CallbackRegistry.' + callbackName;
+  
+    CallbackRegistry[callbackName] = function(data) {
+      scriptOk = true; 
+      delete CallbackRegistry[callbackName]; 
+      onSuccess(data); 
+    };
+  
+    function checkCallback() {
+      if (scriptOk) return; 
+      delete CallbackRegistry[callbackName];
+      onError(url);
+    }
+  
+    var script = document.createElement('script');
+  
+    script.onload = script.onerror = checkCallback;
+    script.src = url;
+  
+    document.body.appendChild(script);
+  }
+  
+  function onGetApartment(data) {
+    apartmens =  data.response.listings;
+    const container = document.getElementById('listContainer');
+    renderer(container, apartmens);
+  }
 
-       var todoList = [ 
-           new CreateToDoItem("someDescription" , "2019-05-02" , true ) , 
-           new CreateToDoItem("anotherDescription" , "2019-03-02" , true ) , 
-           new CreateToDoItem("lorem ipsum" , "2019-11-11"  ) , 
+  function onShowMoreApartment( data){
 
-        ]
+    apartmens.push(...data.response.listings);
+    const container = document.getElementById('listContainer');
+    
+    renderer(container , apartmens);
+  }
+  
+  function fail(url) {
+    alert( 'Ошибка при запросе ' + url );
+  }
+  
+        function onShowMore(value){
+            currentPage++;
 
-        var filteredDoList = null;
+            let api = 'http://api.nestoria.co.uk/api?action=search_listings',
+                place = '&place_name=' + currentSearch,
+                listing_type = '&listing_type=rent',
+                json_uk = '&encoding=json&pretty=1'
+                page = '&page=' + currentPage,  
+                api_input = api + place + listing_type + json_uk +  page
 
+            scriptRequest(api_input, onShowMoreApartment, fail);          
 
-        
-
-        function validate(form){
-
-            var elements = form.elements;
-            
-            resetError(elements.date.parentNode);
-            resetError(elements.text.parentNode);
-
-            if(!elements.date.value){
-                addError( elements.date.parentNode ,  'введите дату');
-            }
-
-            if(!elements.text.value){
-                addError( elements.text.parentNode ,  'введите текст');
-            }
-            
-            if(elements.text.value && elements.date.value){
-                var todo =  new CreateToDoItem(elements.text.value , elements.date.value );
-
-                todoList.push(todo);
-                clearSearch()
-                renderer(todoList);
-            }
-        };
-
-        function resetError(container){
-                container.className = '';
-                if(container.lastChild.className == 'danger'){
-                    container.removeChild(container.lastChild);
-                }
-                
-        };
-
-         function addError(container , text){
-             var message  = document.createElement('span');
-             message.innerHTML = text;
-             message.className = 'danger';
-             container.appendChild(message);
-             container.className = 'error';
         }
 
-        function init(){
-            renderer(todoList);
+        function getApartment(value){
+            currentPage = 1;
+            currentSearch = value;
+            
+            let api = 'http://api.nestoria.co.uk/api?action=search_listings',
+                place = '&place_name=' + value,
+                listing_type = '&listing_type=rent',
+                json_uk = '&encoding=json&pretty=1',
+                page = '&page=1',         
+                api_input = api + place + listing_type + json_uk +  page;
+
+
+            scriptRequest(api_input, onGetApartment, fail); 
         }
 
-        function renderer(todoList){
+function createElement( options ){
 
-            var container = document.getElementById('listContainer');
+    const elem = document.createElement(options.elemName);
 
-            container.innerHTML = `<tr>
-                                        <th>Description</th>
-                                        <th>Date</th>
-                                        <th>Action buttons</th>
-                                    </tr>`;
+    if(options.innerHTML){
+        elem.innerHTML = options.innerHTML;
+    }
 
-            todoList.forEach( function(elem , index ){
+    if(options.eventName && options.handler ){
+        elem.addEventListener( options.eventName , options.handler);
+    }
 
-                var elemContainer = document.createElement('tr');
-                var btnGroup = document.createElement('td');
+    if(options.atribute  && options.atrValue){
+        elem.setAttribute(options.atribute, options.atrValue);
+    }
+    
+    if( options.src){
+        elem.src =  options.src;
+    }
 
+    return elem;
+}
 
-                var deleteButton = document.createElement('button');
-                var doneButton = document.createElement('button');
+        function openBookMark(){
 
-                if (elem.done === true){
-                    elemContainer.classList = 'done';
-                    doneButton.innerHTML = "-";
-                }else{
-                    doneButton.innerHTML = "+";
-                }
-                
+            let container = createElement({elemName : 'div'}),
+                closeBtn = createElement({elemName : 'button', innerHTML: 'Close' , eventName : 'click', handler : closeModal});
 
+            bookMarks.forEach( function(elem , index ){
+                let elemContainer =  createElement({elemName : 'div', atribute: 'id' , atrValue : index}),
+                    img = createElement({elemName : 'img', src: elem.img_url }),
+                    titleElem = createElement({elemName : 'h5', innerHTML: elem.title }),
+                    bottomContainer = createElement({elemName : 'div'}),
+                    price = createElement({elemName : 'span', innerHTML: 'Price : ' + elem.price_formatted }),
+                    deleteBtn = createElement({elemName : 'button', innerHTML: 'Delete From BookMarks' , eventName : 'click' , handler : deleteBookMark })
+                            
+                bottomContainer.appendChild(price);
+                bottomContainer.appendChild(deleteBtn);
 
-                elemContainer.setAttribute("id", index);
+                elemContainer.appendChild(titleElem);              
+                elemContainer.appendChild(img);
+                elemContainer.appendChild(bottomContainer);
 
-                for ( let key in elem ){
-
-                    var msgElem = document.createElement('td');
-                    msgElem.innerHTML = elem[key];
-                    elemContainer.appendChild(msgElem);
-
-                }
-
-                deleteButton.innerHTML = "X";
-                deleteButton.addEventListener('click' , deleteToDo );
-
-                doneButton.addEventListener('click' , markAsDone );
-
-                btnGroup.appendChild(doneButton);
-                btnGroup.appendChild(deleteButton);
-
-
-                elemContainer.appendChild(btnGroup);
                 container.appendChild(elemContainer);
-            
+
             });
 
+            container.appendChild(closeBtn);
+
+            openModal(container);
         }
 
-        function sortByText(){
-            var doList = filteredDoList ? filteredDoList : todoList;
-             doList.sort( function (a , b ) {
-                 var aText = a.text.toLowerCase();
-                 var bText = b.text.toLowerCase();
-                     if ( aText < bText) {
-                         return -1 ;
-                     }else if ( aText > bText){
-                         return 1 
-                     }else{
-                         return 0;
-                     }
-             })
-             renderer(doList);
-        }
-        function sortByDate(){
-            var doList = filteredDoList ? filteredDoList : todoList;
-            doList.sort( function (a , b ) {
-                 var aDate = a.date.toLowerCase();
-                 var bDate = b.date.toLowerCase();
-                     if ( aDate < bDate) {
-                         return -1 ;
-                     }else if ( aDate > bDate){
-                         return 1 
-                     }else{
-                         return 0;
-                     }
-             })
-             renderer(doList);
-        }
+        function bookMarkToggle(event){
 
-        function markAsDone(event){
-            var doList = filteredDoList ? filteredDoList : todoList;
-            var index =  +event.target.parentElement.parentElement.getAttribute('id');
-            doList[index].done = !doList[index].done;
-            if(doList[index].done){
-                event.target.innerHTML = '-';
+            const index =  +event.target.parentElement.parentElement.getAttribute('id');
+
+            if(bookMarks.indexOf(apartmens[index]) === -1 ){
+                bookMarks.push(apartmens[index]);
+                event.target.innerText = 'delete from bookmark';
             }else{
-                event.target.innerHTML = 'v';
+
+                let indexInBookMark = bookMarks.indexOf(apartmens[index]);
+                bookMarks.splice( indexInBookMark , 1 );
+
+                event.target.innerText = ' to bookmark';
             }
-            renderer(doList);
+            
         }
 
-        function deleteToDo(event){
-            var doList = filteredDoList ? filteredDoList : todoList;
-            var index =  +event.target.parentElement.parentElement.getAttribute('id')
-            doList.splice(index , 1);
+        function deleteBookMark(event){
+            var index =  +event.target.parentElement.parentElement.getAttribute('id');
+            bookMarks.splice(index , 1 );
 
-            renderer(doList);
         }
+
+
+        function renderer(container , displayedItems){
+     
+            container.innerHTML = '';
+
+            displayedItems.forEach( function(elem , index ){
+                let elemContainer =  createElement({elemName : 'div', atribute: 'id' , atrValue : index}),
+                    titleElem = createElement({elemName : 'h5', innerHTML: elem.title }),
+                    img = createElement({elemName : 'img', src: elem.img_url }),
+                    bottomContainer = createElement({elemName : 'div'}),
+                    price = createElement({elemName : 'span', innerHTML: 'Price : ' + elem.price_formatted }),
+                    detailBtn = createElement({elemName : 'button', innerHTML: 'Detail' , eventName : 'click' , handler : onDetail }),
+                    addBookMarkBtn = createElement({elemName : 'button', innerHTML: 'to bookmark' , eventName : 'click' , handler : bookMarkToggle });
+
+
+
+                bottomContainer.appendChild(price);
+                bottomContainer.appendChild(detailBtn);
+                bottomContainer.appendChild(addBookMarkBtn);
+                
+                elemContainer.appendChild(titleElem);
+                elemContainer.appendChild(img);  
+                elemContainer.appendChild(bottomContainer);
+
+                container.appendChild(elemContainer);
+            });
+        }
+
+
+        function onDetail(event){
+
+            const index =  +event.target.parentElement.parentElement.getAttribute('id');
+
+            let elem = apartmens[index],  
+                closeBtn =  createElement({elemName : 'button', innerHTML : 'Close', eventName:'click' , handler : closeModal}),
+                container = createElement({elemName : 'div'}),
+                titleElem = createElement({elemName : 'h5', innerHTML : 'Detail of : ' + elem.title });
+
+
+            container.appendChild(titleElem);
+            container.appendChild(closeBtn);   
+
+            openModal(container);
+            
+        }
+
+        function openModal(container){
+
+            let modal = createElement({elemName : 'div' , atribute : 'id' , atrValue : 'modal'})
+            
+            modal.appendChild(container);
+            document.body.style.overflow = 'hidden'
+            document.body.appendChild(modal)
+
+        }
+
+        function closeModal() {
+            document.body.style.overflow = 'auto'
+            document.body.removeChild(document.getElementById('modal'));
+          }
+
         function clearSearch(){
             var input = document.getElementById('myInput');
             input.value = '';
             filteredDoList = null;
         }
 
-        function find(event){
-            var value = event.target.value.trim();
+        function searchBtn(){
+            var value = document.getElementById('myInput').value;
+            if(value){
+                getApartment(value);
+            }          
+        }
 
-            filteredDoList = todoList.filter( (elem)=>{
-                if( elem.text.indexOf(value) != -1  || elem.date.indexOf(value) != -1){
-                    return true;
-                }
-            })
-
-            renderer(filteredDoList);
+        function find(event , value){
+            if(event.keyCode === 13 && value){
+                getApartment(value);
+            }
         }
