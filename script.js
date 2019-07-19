@@ -18,7 +18,7 @@ function scriptRequest(url, onSuccess, onError) {
         scriptOk = true;
         delete CallbackRegistry[callbackName];
         onSuccess(data);
-        document.getElementById('showMore').style.display = 'inline-block';
+        
     };
 
     function checkCallback() {
@@ -38,6 +38,9 @@ function scriptRequest(url, onSuccess, onError) {
 function onGetApartment(data) {
     apartmens = data.response.listings;
     const container = document.getElementById('listContainer');
+    if(apartmens.length){
+        document.getElementById('showMore').style.display = 'inline-block';
+    }
     renderer(container, apartmens);
 }
 
@@ -207,12 +210,16 @@ function onDetail(event) {
     let elem = apartmens[index],
         closeBtn = createElement({ elemName: 'button', innerHTML: 'Close', eventName: 'click', handler: closeModal }),
         container = createElement({ elemName: 'div' }),
-        titleElem = createElement({ elemName: 'h5', innerHTML: 'Detail of : ' + elem.title });
+        titleElem = createElement({ elemName: 'h5', innerHTML: 'Detail of : ' + elem.title }),
+        img = createElement({ elemName: 'img', src: elem.img_url })
 
 
     container.appendChild(titleElem);
+    container.appendChild(img);
+
     container.appendChild(closeBtn);
 
+    console.log(elem)
     openModal(container);
 
 }
