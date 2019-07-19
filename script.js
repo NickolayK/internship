@@ -154,7 +154,7 @@ function bookMarkToggle(event) {
 function deleteBookMark(event) {
     var index = +event.target.parentElement.parentElement.getAttribute('id');
     bookMarks.splice(index, 1);
-
+    
 }
 
 
@@ -168,8 +168,15 @@ function renderer(container, displayedItems) {
             img = createElement({ elemName: 'img', src: elem.img_url }),
             bottomContainer = createElement({ elemName: 'div' }),
             price = createElement({ elemName: 'span', innerHTML: 'Price : ' + elem.price_formatted }),
-            detailBtn = createElement({ elemName: 'button', innerHTML: 'Detail', eventName: 'click', handler: onDetail }),
-            addBookMarkBtn = createElement({ elemName: 'button', innerHTML: 'to bookmark', eventName: 'click', handler: bookMarkToggle });
+            detailBtn = createElement({ elemName: 'button', innerHTML: 'Detail', eventName: 'click', handler: onDetail });
+
+            if(bookMarks.indexOf(elem ) !== -1 ){
+               
+                var addBookMarkBtn = createElement({ elemName: 'button', innerHTML: 'delete from bookmark ', eventName: 'click', handler: bookMarkToggle });
+            }else{
+                var  addBookMarkBtn = createElement({ elemName: 'button', innerHTML: 'to bookmark', eventName: 'click', handler: bookMarkToggle });
+            }
+            
 
 
 
@@ -216,6 +223,10 @@ function openModal(container) {
 function closeModal() {
     document.body.style.overflow = 'auto'
     document.body.removeChild(document.getElementById('modal'));
+
+    const container = document.getElementById('listContainer');
+
+    renderer(container, apartmens);
 }
 
 function clearSearch() {
