@@ -18,6 +18,7 @@ function scriptRequest(url, onSuccess, onError) {
         scriptOk = true;
         delete CallbackRegistry[callbackName];
         onSuccess(data);
+        document.getElementById('showMore').style.display = 'inline-block';
     };
 
     function checkCallback() {
@@ -67,6 +68,7 @@ function onShowMore(value) {
 }
 
 function getApartment(value) {
+    
     currentPage = 1;
     currentSearch = value;
 
@@ -140,7 +142,7 @@ function bookMarkToggle(event) {
 
     if (bookMarks.indexOf(apartmens[index]) === -1) {
         bookMarks.push(apartmens[index]);
-        event.target.innerText = 'delete from bookmark';
+        event.target.innerText = 'delete bookmark';
     } else {
 
         let indexInBookMark = bookMarks.indexOf(apartmens[index]);
@@ -152,8 +154,13 @@ function bookMarkToggle(event) {
 }
 
 function deleteBookMark(event) {
-    var index = +event.target.parentElement.parentElement.getAttribute('id');
+    var elem = event.target.parentElement.parentElement;
+    
+    var index = +elem.getAttribute('id');
+
     bookMarks.splice(index, 1);
+    elem.parentElement.removeChild(elem);
+
     
 }
 
@@ -167,12 +174,12 @@ function renderer(container, displayedItems) {
             titleElem = createElement({ elemName: 'h5', innerHTML: elem.title }),
             img = createElement({ elemName: 'img', src: elem.img_url }),
             bottomContainer = createElement({ elemName: 'div' }),
-            price = createElement({ elemName: 'span', innerHTML: 'Price : ' + elem.price_formatted }),
+            price = createElement({ elemName: 'p', innerHTML: 'Price : ' + elem.price_formatted + ' - ' + elem.price_type}),
             detailBtn = createElement({ elemName: 'button', innerHTML: 'Detail', eventName: 'click', handler: onDetail });
 
             if(bookMarks.indexOf(elem ) !== -1 ){
                
-                var addBookMarkBtn = createElement({ elemName: 'button', innerHTML: 'delete from bookmark ', eventName: 'click', handler: bookMarkToggle });
+                var addBookMarkBtn = createElement({ elemName: 'button', innerHTML: 'delete bookmark ', eventName: 'click', handler: bookMarkToggle });
             }else{
                 var  addBookMarkBtn = createElement({ elemName: 'button', innerHTML: 'to bookmark', eventName: 'click', handler: bookMarkToggle });
             }
@@ -229,11 +236,7 @@ function closeModal() {
     renderer(container, apartmens);
 }
 
-function clearSearch() {
-    var input = document.getElementById('myInput');
-    input.value = '';
-    filteredDoList = null;
-}
+
 
 function searchBtn() {
     var value = document.getElementById('myInput').value;
@@ -243,6 +246,7 @@ function searchBtn() {
 }
 
 function find(event, value) {
+
     if (event.keyCode === 13 && value) {
         getApartment(value);
     }
