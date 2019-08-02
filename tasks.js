@@ -71,6 +71,14 @@ function increaseInArray (num, arr) {
     console.log(myFunc(add)(1)(2));  //3
     console.log(myFunc(mul)(3)(2));  //6 */
 
+    function add(a, b) {
+        return a + b;
+    }
+    
+    function mul(a, b) {
+        return a * b;
+    }
+    
     function myFunc(func) {
         var args = [];
     
